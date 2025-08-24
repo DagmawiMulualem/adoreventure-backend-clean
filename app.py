@@ -17,17 +17,36 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Configure OpenAI
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai_api_key = os.getenv('OPENAI_API_KEY')
+if not openai_api_key:
+    logger.error("OPENAI_API_KEY environment variable is not set!")
+else:
+    logger.info("OPENAI_API_KEY is configured")
+    openai.api_key = openai_api_key
 
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "service": "adoreventure-ai-backend"})
 
+@app.route('/test-env', methods=['GET'])
+def test_env():
+    """Test environment variables"""
+    return jsonify({
+        "openai_key_set": bool(openai_api_key),
+        "openai_key_length": len(openai_api_key) if openai_api_key else 0,
+        "flask_env": os.getenv('FLASK_ENV', 'not_set')
+    })
+
 @app.route('/api/ideas', methods=['POST'])
 def get_ideas():
     """Generate adventure ideas using OpenAI"""
     try:
+        # Check if OpenAI API key is configured
+        if not openai_api_key:
+            logger.error("OPENAI_API_KEY is not configured")
+            return jsonify({"error": "OpenAI API key not configured"}), 500
+
         # Get request data
         data = request.get_json()
 
@@ -88,6 +107,8 @@ def get_ideas():
         Return only activities relevant to the location/category.
         """
 
+        logger.info("Calling OpenAI API...")
+
         # Call OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
@@ -112,7 +133,7 @@ def get_ideas():
         return jsonify({"error": "Invalid JSON response from AI"}), 500
     except Exception as e:
         logger.error(f"Error generating ideas: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 @app.route('/api/ideas/test', methods=['GET'])
 def test_ideas():

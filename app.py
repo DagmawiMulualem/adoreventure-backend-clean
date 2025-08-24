@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import json
@@ -22,7 +22,7 @@ if not openai_api_key:
     logger.error("OPENAI_API_KEY environment variable is not set!")
 else:
     logger.info("OPENAI_API_KEY is configured")
-    openai.api_key = openai_api_key
+    client = OpenAI(api_key=openai_api_key)
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -109,8 +109,8 @@ def get_ideas():
 
         logger.info("Calling OpenAI API...")
 
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
+        # Call OpenAI API using new client syntax
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},

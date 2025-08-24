@@ -20,9 +20,15 @@ CORS(app)  # Enable CORS for all routes
 openai_api_key = os.getenv('OPENAI_API_KEY')
 if not openai_api_key:
     logger.error("OPENAI_API_KEY environment variable is not set!")
+    client = None
 else:
     logger.info("OPENAI_API_KEY is configured")
-    client = OpenAI(api_key=openai_api_key)
+    try:
+        client = OpenAI(api_key=openai_api_key)
+        logger.info("OpenAI client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OpenAI client: {e}")
+        client = None
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -35,7 +41,8 @@ def test_env():
     return jsonify({
         "openai_key_set": bool(openai_api_key),
         "openai_key_length": len(openai_api_key) if openai_api_key else 0,
-        "flask_env": os.getenv('FLASK_ENV', 'not_set')
+        "flask_env": os.getenv('FLASK_ENV', 'not_set'),
+        "client_initialized": client is not None
     })
 
 @app.route('/api/ideas', methods=['POST'])
@@ -46,6 +53,11 @@ def get_ideas():
         if not openai_api_key:
             logger.error("OPENAI_API_KEY is not configured")
             return jsonify({"error": "OpenAI API key not configured"}), 500
+
+        # Check if client is initialized
+        if not client:
+            logger.error("OpenAI client is not initialized")
+            return jsonify({"error": "OpenAI client not initialized"}), 500
 
         # Get request data
         data = request.get_json()

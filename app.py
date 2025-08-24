@@ -93,6 +93,13 @@ HOURS GUIDELINES:
 - Include special hours for holidays or events
 - Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
 
+WEBSITE & BOOKING GUIDELINES:
+- Only include websites that you are 100% certain exist and are correct
+- If you're not sure about a website, use null instead of making one up
+- For booking URLs, only include real booking systems you know exist
+- Many local businesses may not have websites - that's okay, use null
+- Focus on providing accurate information rather than filling every field
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "travel": """You are a specialized Travel Activities Expert. You generate exciting travel experiences and adventures for tourists and travelers.
@@ -128,6 +135,13 @@ HOURS GUIDELINES:
 - Note seasonal variations if applicable
 - Include special hours for holidays or events
 - Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
+
+WEBSITE & BOOKING GUIDELINES:
+- Only include websites that you are 100% certain exist and are correct
+- If you're not sure about a website, use null instead of making one up
+- For booking URLs, only include real booking systems you know exist
+- Many local businesses may not have websites - that's okay, use null
+- Focus on providing accurate information rather than filling every field
 
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
@@ -165,6 +179,13 @@ HOURS GUIDELINES:
 - Include special hours for holidays or events
 - Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
 
+WEBSITE & BOOKING GUIDELINES:
+- Only include websites that you are 100% certain exist and are correct
+- If you're not sure about a website, use null instead of making one up
+- For booking URLs, only include real booking systems you know exist
+- Many local businesses may not have websites - that's okay, use null
+- Focus on providing accurate information rather than filling every field
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "special": """You are a specialized Special Events Expert. You generate unique and memorable experiences for celebrations and special occasions.
@@ -201,6 +222,13 @@ HOURS GUIDELINES:
 - Include special hours for holidays or events
 - Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
 
+WEBSITE & BOOKING GUIDELINES:
+- Only include websites that you are 100% certain exist and are correct
+- If you're not sure about a website, use null instead of making one up
+- For booking URLs, only include real booking systems you know exist
+- Many local businesses may not have websites - that's okay, use null
+- Focus on providing accurate information rather than filling every field
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "group": """You are a specialized Group Activities Expert. You generate fun and engaging activities for groups of friends, families, or teams.
@@ -236,6 +264,13 @@ HOURS GUIDELINES:
 - Note seasonal variations if applicable
 - Include special hours for holidays or events
 - Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
+
+WEBSITE & BOOKING GUIDELINES:
+- Only include websites that you are 100% certain exist and are correct
+- If you're not sure about a website, use null instead of making one up
+- For booking URLs, only include real booking systems you know exist
+- Many local businesses may not have websites - that's okay, use null
+- Focus on providing accurate information rather than filling every field
 
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message."""
 }
@@ -323,9 +358,14 @@ Output MUST be a JSON object with this exact shape:
 IMPORTANT REQUIREMENTS:
 - priceRange: Use specific ranges like "$15-25 per person", "$0" for free, or "Free"
 - hours: Provide accurate, current operating hours in format ["Mon-Fri 9am-5pm", "Sat-Sun 10am-6pm"]
+- website: ONLY include websites you are 100% certain exist and are correct. If unsure, use null
+- bookingURL: ONLY include real booking systems you know exist. If unsure, use null
+- phone: Use real phone numbers when known, or null if unknown
 - Only suggest activities that actually exist in the specified location
 - Ratings must be between 4.3 and 5.0
-- Return 6–10 ideas"""
+- Return 6–10 ideas
+
+CRITICAL: Do not make up websites, booking URLs, or phone numbers. It's better to use null than to provide fake information."""
 
         # Build user prompt
         user_prompt = f"""

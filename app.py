@@ -78,6 +78,21 @@ Focus on activities that:
 - Offer variety in price ranges
 - Include both indoor and outdoor options
 
+PRICING GUIDELINES:
+- Research and provide accurate price estimates when possible
+- Use specific ranges like "$15-25 per person" instead of just "$"
+- For restaurants, include typical meal costs
+- For activities, include per-person costs
+- For free activities, use "$0" or "Free"
+- For premium experiences, use specific ranges like "$150-300 per couple"
+
+HOURS GUIDELINES:
+- Provide accurate, current operating hours
+- Include days of the week when relevant
+- Note seasonal variations if applicable
+- Include special hours for holidays or events
+- Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "travel": """You are a specialized Travel Activities Expert. You generate exciting travel experiences and adventures for tourists and travelers.
@@ -98,6 +113,21 @@ Focus on activities that:
 - Offer authentic local experiences
 - Include both popular and hidden gems
 - Cater to different interests and budgets
+
+PRICING GUIDELINES:
+- Research and provide accurate price estimates when possible
+- Use specific ranges like "$25-45 per person" instead of just "$"
+- For attractions, include admission fees
+- For tours, include per-person costs
+- For free attractions, use "$0" or "Free"
+- For premium experiences, use specific ranges like "$80-150 per person"
+
+HOURS GUIDELINES:
+- Provide accurate, current operating hours
+- Include days of the week when relevant
+- Note seasonal variations if applicable
+- Include special hours for holidays or events
+- Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
 
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
@@ -120,6 +150,21 @@ Focus on activities that:
 - Offer regular and ongoing options
 - Appeal to different age groups and interests
 
+PRICING GUIDELINES:
+- Research and provide accurate price estimates when possible
+- Use specific ranges like "$10-20 per class" instead of just "$"
+- For classes, include per-session costs
+- For memberships, include monthly/annual fees
+- For free activities, use "$0" or "Free"
+- For premium services, use specific ranges like "$50-100 per session"
+
+HOURS GUIDELINES:
+- Provide accurate, current operating hours
+- Include days of the week when relevant
+- Note seasonal variations if applicable
+- Include special hours for holidays or events
+- Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "special": """You are a specialized Special Events Expert. You generate unique and memorable experiences for celebrations and special occasions.
@@ -141,6 +186,21 @@ Focus on activities that:
 - Cater to different group sizes
 - Include both intimate and grand celebrations
 
+PRICING GUIDELINES:
+- Research and provide accurate price estimates when possible
+- Use specific ranges like "$200-500 for group of 10" instead of just "$"
+- For venues, include rental costs
+- For services, include per-person or package costs
+- For premium experiences, use specific ranges like "$500-1500 per event"
+- Include what's included in the price when relevant
+
+HOURS GUIDELINES:
+- Provide accurate, current operating hours
+- Include days of the week when relevant
+- Note seasonal variations if applicable
+- Include special hours for holidays or events
+- Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
+
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
 
     "group": """You are a specialized Group Activities Expert. You generate fun and engaging activities for groups of friends, families, or teams.
@@ -161,6 +221,21 @@ Focus on activities that:
 - Appeal to diverse group interests
 - Work for different group sizes
 - Offer both competitive and cooperative options
+
+PRICING GUIDELINES:
+- Research and provide accurate price estimates when possible
+- Use specific ranges like "$30-60 per person" instead of just "$"
+- For group activities, include per-person costs
+- For team building, include package prices
+- For family activities, include family rates when available
+- For premium experiences, use specific ranges like "$75-150 per person"
+
+HOURS GUIDELINES:
+- Provide accurate, current operating hours
+- Include days of the week when relevant
+- Note seasonal variations if applicable
+- Include special hours for holidays or events
+- Use format: "Mon-Fri 9am-5pm, Sat-Sun 10am-6pm"
 
 IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message."""
 }
@@ -231,7 +306,7 @@ Output MUST be a JSON object with this exact shape:
       "rating": 4.3,
       "place": "Neighborhood or venue name",
       "duration": "e.g. 1–3 hours",
-      "priceRange": "$$",
+      "priceRange": "Specific price range like $15-25 per person or Free",
       "tags": ["short","tag","words"],
 
       // Detail fields (optional but preferred; use null if unknown)
@@ -245,9 +320,12 @@ Output MUST be a JSON object with this exact shape:
   ]
 }
 
-Do not include any text outside JSON.
-Ratings must be between 4.3 and 5.0. Return 6–10 ideas.
-Only suggest activities that actually exist in the specified location."""
+IMPORTANT REQUIREMENTS:
+- priceRange: Use specific ranges like "$15-25 per person", "$0" for free, or "Free"
+- hours: Provide accurate, current operating hours in format ["Mon-Fri 9am-5pm", "Sat-Sun 10am-6pm"]
+- Only suggest activities that actually exist in the specified location
+- Ratings must be between 4.3 and 5.0
+- Return 6–10 ideas"""
 
         # Build user prompt
         user_prompt = f"""

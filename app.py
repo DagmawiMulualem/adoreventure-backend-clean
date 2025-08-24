@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
+import openai
 import os
 from dotenv import load_dotenv
 import json
@@ -20,15 +20,16 @@ CORS(app)  # Enable CORS for all routes
 openai_api_key = os.getenv('OPENAI_API_KEY')
 if not openai_api_key:
     logger.error("OPENAI_API_KEY environment variable is not set!")
-    client = None
+    client_configured = False
 else:
     logger.info("OPENAI_API_KEY is configured")
     try:
-        client = OpenAI(api_key=openai_api_key)
-        logger.info("OpenAI client initialized successfully")
+        openai.api_key = openai_api_key
+        client_configured = True
+        logger.info("OpenAI client configured successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize OpenAI client: {e}")
-        client = None
+        logger.error(f"Failed to configure OpenAI client: {e}")
+        client_configured = False
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -42,7 +43,7 @@ def test_env():
         "openai_key_set": bool(openai_api_key),
         "openai_key_length": len(openai_api_key) if openai_api_key else 0,
         "flask_env": os.getenv('FLASK_ENV', 'not_set'),
-        "client_initialized": client is not None
+        "client_configured": client_configured
     })
 
 @app.route('/api/ideas', methods=['POST'])
@@ -54,10 +55,10 @@ def get_ideas():
             logger.error("OPENAI_API_KEY is not configured")
             return jsonify({"error": "OpenAI API key not configured"}), 500
 
-        # Check if client is initialized
-        if not client:
-            logger.error("OpenAI client is not initialized")
-            return jsonify({"error": "OpenAI client not initialized"}), 500
+        # Check if client is configured
+        if not client_configured:
+            logger.error("OpenAI client is not configured")
+            return jsonify({"error": "OpenAI client not configured"}), 500
 
         # Get request data
         data = request.get_json()
@@ -121,8 +122,8 @@ def get_ideas():
 
         logger.info("Calling OpenAI API...")
 
-        # Call OpenAI API using new client syntax
-        response = client.chat.completions.create(
+        # Call OpenAI API using old syntax
+        response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},

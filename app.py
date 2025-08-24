@@ -31,6 +31,140 @@ else:
         logger.error(f"Failed to configure OpenAI client: {e}")
         client_configured = False
 
+# Location validation function
+def is_valid_location(location):
+    """Check if location is a real, accessible place"""
+    # Common invalid locations
+    invalid_locations = [
+        "mars", "moon", "jupiter", "saturn", "venus", "mercury", "neptune", "uranus", "pluto",
+        "hogwarts", "middle earth", "narnia", "westeros", "neverland", "atlantis", "el dorado",
+        "shangri-la", "utopia", "fantasy land", "dream world", "imaginary place", "fake city",
+        "test location", "example city", "sample town", "demo place", "mock location"
+    ]
+    
+    location_lower = location.lower().strip()
+    
+    # Check against invalid locations
+    for invalid in invalid_locations:
+        if invalid in location_lower:
+            return False
+    
+    # Check if location is too short or generic
+    if len(location.strip()) < 3:
+        return False
+    
+    # Check for obvious non-locations
+    if any(word in location_lower for word in ["test", "example", "sample", "demo", "fake", "mock"]):
+        return False
+    
+    return True
+
+# Category-specific system prompts
+CATEGORY_PROMPTS = {
+    "date": """You are a specialized Date Ideas Expert. You generate romantic, memorable, and engaging date activities for couples.
+
+Your expertise includes:
+- Romantic dining experiences and unique restaurants
+- Cultural activities (museums, theaters, galleries)
+- Outdoor adventures and scenic locations
+- Entertainment venues and shows
+- Wellness and relaxation activities
+- Creative and interactive experiences
+
+Focus on activities that:
+- Foster connection and conversation
+- Create memorable moments
+- Are suitable for couples
+- Offer variety in price ranges
+- Include both indoor and outdoor options
+
+IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
+
+    "travel": """You are a specialized Travel Activities Expert. You generate exciting travel experiences and adventures for tourists and travelers.
+
+Your expertise includes:
+- Tourist attractions and landmarks
+- Adventure activities and outdoor experiences
+- Cultural immersion and local experiences
+- Food and culinary tours
+- Historical sites and educational activities
+- Entertainment and nightlife
+- Shopping and markets
+- Transportation and sightseeing
+
+Focus on activities that:
+- Showcase the destination's unique character
+- Appeal to travelers and tourists
+- Offer authentic local experiences
+- Include both popular and hidden gems
+- Cater to different interests and budgets
+
+IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
+
+    "local": """You are a specialized Local Activities Expert. You generate engaging activities for residents and locals to enjoy their own city.
+
+Your expertise includes:
+- Local entertainment and recreation
+- Community events and activities
+- Fitness and wellness options
+- Educational and skill-building activities
+- Social and networking opportunities
+- Family-friendly activities
+- Hobby and interest groups
+- Local businesses and services
+
+Focus on activities that:
+- Help locals discover their city
+- Build community connections
+- Support local businesses
+- Offer regular and ongoing options
+- Appeal to different age groups and interests
+
+IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
+
+    "special": """You are a specialized Special Events Expert. You generate unique and memorable experiences for celebrations and special occasions.
+
+Your expertise includes:
+- Birthday celebrations and parties
+- Anniversary and milestone events
+- Holiday and seasonal activities
+- Corporate events and team building
+- Graduation and achievement celebrations
+- Engagement and wedding activities
+- Holiday and vacation experiences
+- Cultural and religious celebrations
+
+Focus on activities that:
+- Make occasions memorable and special
+- Create lasting memories
+- Offer unique and exclusive experiences
+- Cater to different group sizes
+- Include both intimate and grand celebrations
+
+IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message.""",
+
+    "group": """You are a specialized Group Activities Expert. You generate fun and engaging activities for groups of friends, families, or teams.
+
+Your expertise includes:
+- Team building and group bonding activities
+- Social gatherings and parties
+- Family-friendly group activities
+- Sports and recreational group activities
+- Educational and cultural group experiences
+- Entertainment and gaming activities
+- Food and dining group experiences
+- Adventure and outdoor group activities
+
+Focus on activities that:
+- Bring people together
+- Encourage interaction and collaboration
+- Appeal to diverse group interests
+- Work for different group sizes
+- Offer both competitive and cooperative options
+
+IMPORTANT: Only suggest activities that actually exist in the specified location. If the location is invalid or fictional, respond with an error message."""
+}
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -76,51 +210,59 @@ def get_ideas():
         if not location or not category:
             return jsonify({"error": "Location and category are required"}), 400
 
-        logger.info(f"Generating ideas for location: {location}, category: {category}")
+        # Validate location
+        if not is_valid_location(location):
+            return jsonify({"error": f"'{location}' is not a valid location. Please enter a real city, town, or area."}), 400
 
-        # Build system prompt
-        system_prompt = """
-        You generate activity ideas as STRICT JSON only.
-        Output MUST be a JSON object with this exact shape:
+        # Get category-specific system prompt
+        system_prompt = CATEGORY_PROMPTS.get(category.lower(), CATEGORY_PROMPTS["local"])
+        
+        # Add JSON output format to system prompt
+        system_prompt += """
 
-        {
-          "ideas": [
-            {
-              "title": "String",
-              "blurb": "Short enticing description (1–2 sentences).",
-              "rating": 4.3,
-              "place": "Neighborhood or venue name",
-              "duration": "e.g. 1–3 hours",
-              "priceRange": "$$",
-              "tags": ["short","tag","words"],
+You generate activity ideas as STRICT JSON only.
+Output MUST be a JSON object with this exact shape:
 
-              // Detail fields (optional but preferred; use null if unknown)
-              "address": "Full address or area, city/state",
-              "phone": "(202) 555-0199",
-              "website": "https://example.com",
-              "bookingURL": "https://booking.example.com",
-              "bestTime": "e.g. Golden hour 6–8 pm",
-              "hours": ["Mon–Thu 10am–9pm","Fri–Sat 10am–11pm","Sun 10am–8pm"]
-            }
-          ]
-        }
+{
+  "ideas": [
+    {
+      "title": "String",
+      "blurb": "Short enticing description (1–2 sentences).",
+      "rating": 4.3,
+      "place": "Neighborhood or venue name",
+      "duration": "e.g. 1–3 hours",
+      "priceRange": "$$",
+      "tags": ["short","tag","words"],
 
-        Do not include any text outside JSON.
-        Ratings must be between 4.3 and 5.0. Return 6–10 ideas.
-        """
+      // Detail fields (optional but preferred; use null if unknown)
+      "address": "Full address or area, city/state",
+      "phone": "(202) 555-0199",
+      "website": "https://example.com",
+      "bookingURL": "https://booking.example.com",
+      "bestTime": "e.g. Golden hour 6–8 pm",
+      "hours": ["Mon–Thu 10am–9pm","Fri–Sat 10am–11pm","Sun 10am–8pm"]
+    }
+  ]
+}
+
+Do not include any text outside JSON.
+Ratings must be between 4.3 and 5.0. Return 6–10 ideas.
+Only suggest activities that actually exist in the specified location."""
 
         # Build user prompt
         user_prompt = f"""
-        Location: {location}
-        Category: {category}
-        Preferences:
-        {f"Budget: {budget_hint}" if budget_hint else "-"}
-        {f"Time: {time_hint}" if time_hint else "-"}
-        {f"Setting: {indoor_outdoor}" if indoor_outdoor else "-"}
-        Return only activities relevant to the location/category.
-        """
+Location: {location}
+Category: {category}
+Preferences:
+{f"Budget: {budget_hint}" if budget_hint else "-"}
+{f"Time: {time_hint}" if time_hint else "-"}
+{f"Setting: {indoor_outdoor}" if indoor_outdoor else "-"}
 
-        logger.info("Calling OpenAI API...")
+Generate activities that are specific to {location} and relevant to the {category} category.
+Ensure all suggestions are real, accessible places and activities in {location}.
+"""
+
+        logger.info(f"Generating {category} ideas for location: {location}")
 
         # Call OpenAI API using old syntax
         response = openai.ChatCompletion.create(
@@ -137,7 +279,7 @@ def get_ideas():
         content = response.choices[0].message.content
         ideas_data = json.loads(content)
 
-        logger.info(f"Successfully generated {len(ideas_data.get('ideas', []))} ideas")
+        logger.info(f"Successfully generated {len(ideas_data.get('ideas', []))} {category} ideas for {location}")
 
         return jsonify(ideas_data)
 
